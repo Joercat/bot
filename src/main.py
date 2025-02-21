@@ -7,8 +7,12 @@ from collections import deque
 import json
 from pathlib import Path
 from datetime import datetime
-import threading
 import queue
+import os
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 
 class WritingAssistantBot:
     def __init__(self):
@@ -17,7 +21,6 @@ class WritingAssistantBot:
         self.gpt2_model = GPT2LMHeadModel.from_pretrained('gpt2')
         self.context_memory = deque(maxlen=10)
         self.response_queue = queue.Queue()
-        self.load_knowledge_base()
         
         self.writing_styles = {
             'formal': {
@@ -42,9 +45,7 @@ class WritingAssistantBot:
             }
         }
 
-    def load_knowledge_base(self):
-        kb_path = Path('writing_knowledge_base.json')
-        default_kb = {
+        self.knowledge_base = {
             "writing_patterns": {
                 "improve": ["enhance", "better", "upgrade", "polish", "refine"],
                 "style": ["tone", "voice", "formal", "casual", "style"],
@@ -52,20 +53,25 @@ class WritingAssistantBot:
                 "creative": ["imaginative", "original", "unique", "creative"]
             },
             "learned_responses": {},
-            "style_examples": {},
+            "style_examples": {
+                "formal": {
+                    "templates": [
+                        "It is our pleasure to inform you that...",
+                        "We would like to bring to your attention..."
+                    ],
+                    "vocabulary": ["furthermore", "subsequently", "nevertheless"]
+                },
+                "creative": {
+                    "templates": [
+                        "The sun painted the sky with...",
+                        "Whispers of wind danced through..."
+                    ],
+                    "vocabulary": ["vibrant", "mesmerizing", "enchanting"]
+                }
+            },
             "user_preferences": {},
             "improvement_history": []
         }
-        
-        self.knowledge_base = default_kb
-        if kb_path.exists():
-            with open(kb_path, 'r') as f:
-                self.knowledge_base.update(json.load(f))
-        self.save_knowledge_base()
-
-    def save_knowledge_base(self):
-        with open('writing_knowledge_base.json', 'w') as f:
-            json.dump(self.knowledge_base, f, indent=4)
 
     def analyze_text(self, text):
         doc = self.nlp(text)
@@ -147,7 +153,6 @@ class WritingAssistantBot:
         suggestions.extend(style_rules)
         return suggestions
 
-app = Flask(__name__)
 bot = WritingAssistantBot()
 
 @app.route('/')
@@ -163,5 +168,10 @@ def improve_text():
     response = bot.get_response(text, style)
     return jsonify(response)
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
