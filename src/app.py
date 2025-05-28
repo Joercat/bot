@@ -832,6 +832,1040 @@ function handleClick() {
             }
         
         return None
+
+        def _generate_html_form(self, user_input):
+    """Generate HTML forms based on user request"""
+    user_lower = user_input.lower()
+    
+    if 'contact' in user_lower or 'contact form' in user_lower:
+        return {
+            'response': "Here's a complete contact form with validation:",
+            'code': '''<form class="contact-form" id="contactForm">
+    <div class="form-group">
+        <label for="name">Full Name *</label>
+        <input type="text" id="name" name="name" required>
+        <span class="error-message" id="nameError"></span>
+    </div>
+    
+    <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input type="email" id="email" name="email" required>
+        <span class="error-message" id="emailError"></span>
+    </div>
+    
+    <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone">
+    </div>
+    
+    <div class="form-group">
+        <label for="subject">Subject *</label>
+        <select id="subject" name="subject" required>
+            <option value="">Select a subject</option>
+            <option value="general">General Inquiry</option>
+            <option value="support">Support</option>
+            <option value="business">Business</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="message">Message *</label>
+        <textarea id="message" name="message" rows="5" required></textarea>
+        <span class="error-message" id="messageError"></span>
+    </div>
+    
+    <button type="submit" class="submit-btn">Send Message</button>
+</form>
+
+<style>
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+    display: block;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Basic validation
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const message = document.getElementById('message').value.trim();
+    
+    let isValid = true;
+    
+    if (name.length < 2) {
+        document.getElementById('nameError').textContent = 'Name must be at least 2 characters';
+        isValid = false;
+    } else {
+        document.getElementById('nameError').textContent = '';
+    }
+    
+    if (!email.includes('@')) {
+        document.getElementById('emailError').textContent = 'Please enter a valid email';
+        isValid = false;
+    } else {
+        document.getElementById('emailError').textContent = '';
+    }
+    
+    if (message.length < 10) {
+        document.getElementById('messageError').textContent = 'Message must be at least 10 characters';
+        isValid = false;
+    } else {
+        document.getElementById('messageError').textContent = '';
+    }
+    
+    if (isValid) {
+        alert('Form submitted successfully!');
+        this.reset();
+    }
+});
+</script>''',
+            'explanation': "A complete contact form with client-side validation, modern styling, and responsive design."
+        }
+    
+    elif 'login' in user_lower:
+        return {
+            'response': "Here's a modern login form:",
+            'code': '''<div class="login-container">
+    <form class="login-form" id="loginForm">
+        <h2>Login</h2>
+        
+        <div class="form-group">
+            <input type="email" id="email" name="email" placeholder="Email Address" required>
+        </div>
+        
+        <div class="form-group">
+            <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
+        
+        <div class="form-options">
+            <label class="checkbox-container">
+                <input type="checkbox" id="remember">
+                <span class="checkmark"></span>
+                Remember me
+            </label>
+            <a href="#" class="forgot-password">Forgot Password?</a>
+        </div>
+        
+        <button type="submit" class="login-btn">Login</button>
+        
+        <div class="signup-link">
+            Don't have an account? <a href="#">Sign up</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-form {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-form h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.forgot-password {
+    color: #667eea;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.signup-link a {
+    color: #667eea;
+    text-decoration: none;
+}
+</style>''',
+            'explanation': "A modern login form with gradient styling and smooth animations."
+        }
+    
+    return None
+
+def _generate_css_layout(self, user_input):
+    """Generate CSS layout based on user request"""
+    user_lower = user_input.lower()
+    
+    if 'flexbox' in user_lower or 'flex' in user_lower:
+        return {
+            'response': "Here's a comprehensive flexbox layout system:",
+            'code': '''<!-- Flexbox Layout Examples -->
+<div class="flex-container">
+    <div class="flex-item">Item 1</div>
+    <div class="flex-item">Item 2</div>
+    <div class="flex-item">Item 3</div>
+</div>
+
+<div class="flex-grid">
+    <div class="flex-card">Card 1</div>
+    <div class="flex-card">Card 2</div>
+    <div class="flex-card">Card 3</div>
+    <div class="flex-card">Card 4</div>
+</div>
+
+<style>
+/* Basic Flexbox Container */
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.flex-item {
+    flex: 1;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Responsive Flex Grid */
+.flex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.flex-card {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 250px;
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.flex-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .flex-container {
+        flex-direction: column;
+    }
+    
+    .flex-card {
+        flex: 1 1 100%;
+    }
+}
+
+/* Utility Classes */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+</style>''',
+            'explanation': "A complete flexbox system with responsive design and utility classes for modern layouts."
+        }
+    
+    elif 'grid' in user_lower:
+        return {
+            'response': "Here's a powerful CSS Grid layout system:",
+            'code': '''<!-- CSS Grid Layout Examples -->
+<div class="grid-container">
+    <header class="grid-header">Header</header>
+    <nav class="grid-nav">Navigation</nav>
+    <main class="grid-main">Main Content</main>
+    <aside class="grid-sidebar">Sidebar</aside>
+    <footer class="grid-footer">Footer</footer>
+</div>
+
+<div class="card-grid">
+    <div class="grid-card">Card 1</div>
+    <div class="grid-card">Card 2</div>
+    <div class="grid-card">Card 3</div>
+    <div class="grid-card">Card 4</div>
+    <div class="grid-card">Card 5</div>
+    <div class="grid-card">Card 6</div>
+</div>
+
+<style>
+/* Website Layout Grid */
+.grid-container {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "nav main sidebar"
+        "footer footer footer";
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 200px 1fr 250px;
+    gap: 20px;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.grid-header {
+    grid-area: header;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.grid-nav {
+    grid-area: nav;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.grid-main {
+    grid-area: main;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.grid-sidebar {
+    grid-area: sidebar;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.grid-footer {
+    grid-area: footer;
+    background: #343a40;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Responsive Card Grid */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.grid-card {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.grid-card:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-areas:
+            "header"
+            "nav"
+            "main"
+            "sidebar"
+            "footer";
+        grid-template-columns: 1fr;
+    }
+}
+</style>''',
+            'explanation': "A complete CSS Grid system with responsive website layout and auto-fitting card grid."
+        }
+    
+    return None
+
+def _generate_js_dom(self, user_input):
+    """Generate JavaScript DOM manipulation based on user request"""
+    user_lower = user_input.lower()
+    
+    if 'dom' in user_lower or 'element' in user_lower:
+        return {
+            'response': "Here's a comprehensive DOM manipulation guide:",
+            'code': '''// DOM Selection Methods
+const element = document.getElementById('myId');
+const elements = document.getElementsByClassName('myClass');
+const queryElement = document.querySelector('.my-selector');
+const queryElements = document.querySelectorAll('.my-selector');
+
+// Creating and Modifying Elements
+function createDynamicContent() {
+    // Create new element
+    const newDiv = document.createElement('div');
+    newDiv.className = 'dynamic-content';
+    newDiv.innerHTML = '<h3>Dynamic Content</h3><p>Created with JavaScript!</p>';
+    
+    // Add styles
+    newDiv.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    newDiv.style.color = 'white';
+    newDiv.style.padding = '20px';
+    newDiv.style.borderRadius = '10px';
+    newDiv.style.margin = '10px 0';
+    
+    // Append to container
+    const container = document.getElementById('container');
+    container.appendChild(newDiv);
+}
+
+// DOM Manipulation Class
+class DOMManager {
+    constructor() {
+        this.elements = new Map();
+    }
+    
+    // Register element for easy access
+    register(name, selector) {
+        this.elements.set(name, document.querySelector(selector));
+        return this;
+    }
+    
+    // Get registered element
+    get(name) {
+        return this.elements.get(name);
+    }
+    
+    // Add class with animation
+    addClass(name, className) {
+        const element = this.get(name);
+        if (element) {
+            element.classList.add(className);
+        }
+        return this;
+    }
+    
+    // Toggle visibility with fade effect
+    toggleVisibility(name) {
+        const element = this.get(name);
+        if (element) {
+            if (element.style.opacity === '0') {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            } else {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(-20px)';
+            }
+        }
+        return this;
+    }
+    
+    // Update content with typing effect
+    typeText(name, text, speed = 50) {
+        const element = this.get(name);
+        if (element) {
+            element.innerHTML = '';
+            let i = 0;
+            const typeInterval = setInterval(() => {
+                element.innerHTML += text.charAt(i);
+                i++;
+                if (i > text.length) {
+                    clearInterval(typeInterval);
+                }
+            }, speed);
+        }
+        return this;
+    }
+}
+
+// Usage Example
+const dom = new DOMManager();
+dom.register('header', '#main-header')
+   .register('content', '.content-area')
+   .register('button', '#action-button');
+
+// Event Delegation Example
+document.addEventListener('click', function(e) {
+    // Handle button clicks
+    if (e.target.matches('.dynamic-btn')) {
+        e.target.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            e.target.style.transform = 'scale(1)';
+        }, 150);
+    }
+    
+    // Handle card clicks
+    if (e.target.matches('.card')) {
+        e.target.classList.toggle('expanded');
+    }
+});
+
+// Intersection Observer for animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+        }
+    });
+}, observerOptions);
+
+// Observe all elements with animation class
+document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el);
+});''',
+            'explanation': "Complete DOM manipulation toolkit with modern JavaScript patterns, event delegation, and intersection observer for animations."
+        }
+    
+    elif 'event' in user_lower:
+        return {
+            'response': "Here's a comprehensive event handling system:",
+            'code': '''// Modern Event Handling Examples
+
+// Event Listener Class
+class EventManager {
+    constructor() {
+        this.listeners = new Map();
+    }
+    
+    // Add event listener with automatic cleanup
+    on(element, event, handler, options = {}) {
+        const key = `${element.id || 'element'}-${event}`;
+        
+        // Store for cleanup
+        this.listeners.set(key, { element, event, handler });
+        
+        element.addEventListener(event, handler, options);
+        return this;
+    }
+    
+    // Remove specific event listener
+    off(element, event) {
+        const key = `${element.id || 'element'}-${event}`;
+        const listener = this.listeners.get(key);
+        
+        if (listener) {
+            element.removeEventListener(event, listener.handler);
+            this.listeners.delete(key);
+        }
+        return this;
+    }
+    
+    // Remove all listeners
+    cleanup() {
+        this.listeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+        this.listeners.clear();
+    }
+}
+
+// Custom Event System
+class CustomEventEmitter {
+    constructor() {
+        this.events = {};
+    }
+    
+    on(event, callback) {
+        if (!this.events[event]) {
+            this.events[event] = [];
+        }
+        this.events[event].push(callback);
+    }
+    
+    emit(event, data) {
+        if (this.events[event]) {
+            this.events[event].forEach(callback => callback(data));
+        }
+    }
+    
+    off(event, callback) {
+        if (this.events[event]) {
+            this.events[event] = this.events[event].filter(cb => cb !== callback);
+        }
+    }
+}
+
+// Usage Examples
+const eventManager = new EventManager();
+const emitter = new CustomEventEmitter();
+
+// Button click with debouncing
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+const debouncedClick = debounce((e) => {
+    console.log('Button clicked!', e.target);
+    emitter.emit('buttonClicked', { target: e.target });
+}, 300);
+
+// Form handling with validation
+function setupFormEvents() {
+    const form = document.querySelector('#myForm');
+    const inputs = form.querySelectorAll('input, textarea');
+    
+    // Real-time validation
+    inputs.forEach(input => {
+        eventManager.on(input, 'input', (e) => {
+            validateField(e.target);
+        });
+        
+        eventManager.on(input, 'blur', (e) => {
+            validateField(e.target, true);
+        });
+    });
+    
+    // Form submission
+    eventManager.on(form, 'submit', (e) => {
+        e.preventDefault();
+        if (validateForm(form)) {
+            submitForm(form);
+        }
+    });
+}
+
+function validateField(field, showError = false) {
+    const value = field.value.trim();
+    let isValid = true;
+    let message = '';
+    
+    if (field.required && !value) {
+        isValid = false;
+        message = 'This field is required';
+    } else if (field.type === 'email' && value && !isValidEmail(value)) {
+        isValid = false;
+        message = 'Please enter a valid email';
+    }
+    
+    // Update UI
+    field.classList.toggle('invalid', !isValid);
+    const errorElement = field.nextElementSibling;
+    if (errorElement && errorElement.classList.contains('error-message')) {
+        errorElement.textContent = showError ? message : '';
+    }
+    
+    return isValid;
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + S to save
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        emitter.emit('save', { timestamp: Date.now() });
+    }
+    
+    // Escape to close modals
+    if (e.key === 'Escape') {
+        emitter.emit('closeModal');
+    }
+});
+
+// Touch events for mobile
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', (e) => {
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartY - touchEndY;
+    
+    if (Math.abs(diff) > 50) {
+        emitter.emit('swipe', { 
+            direction: diff > 0 ? 'up' : 'down',
+            distance: Math.abs(diff)
+        });
+    }
+});
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', () => {
+    setupFormEvents();
+    
+    // Listen to custom events
+    emitter.on('buttonClicked', (data) => {
+        console.log('Custom event received:', data);
+    });
+    
+    emitter.on('save', (data) => {
+        console.log('Save triggered at:', new Date(data.timestamp));
+    });
+});''',
+            'explanation': "Advanced event handling system with custom events, debouncing, form validation, keyboard shortcuts, and touch support."
+        }
+    
+    return None
+
+# Add this method to the WebDevCodeBot class as well
+def _generate_css_responsive(self, user_input):
+    """Generate responsive CSS based on user request"""
+    user_lower = user_input.lower()
+    
+    if 'responsive' in user_lower or 'mobile' in user_lower:
+        return {
+            'response': "Here's a comprehensive responsive design system:",
+            'code': '''/* Mobile-First Responsive Design */
+
+/* Base styles (mobile first) */
+.container {
+    width: 100%;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Typography scaling */
+.heading {
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    line-height: 1.2;
+}
+
+.text {
+    font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+    line-height: 1.6;
+}
+
+/* Responsive breakpoints */
+@media (min-width: 480px) {
+    .container {
+        padding: 20px;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 750px;
+        padding: 30px;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+    
+    .card {
+        padding: 30px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1400px;
+    }
+}
+
+/* Responsive navigation */
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+.nav-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-menu.active {
+    display: flex;
+}
+
+.nav-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .nav-menu {
+        display: flex;
+        flex-direction: row;
+        position: static;
+        width: auto;
+        background: none;
+        box-shadow: none;
+    }
+    
+    .nav-toggle {
+        display: none;
+    }
+}
+
+/* Responsive images */
+.responsive-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.img-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+/* Aspect ratio containers */
+.aspect-16-9 {
+    aspect-ratio: 16 / 9;
+}
+
+.aspect-4-3 {
+    aspect-ratio: 4 / 3;
+}
+
+.aspect-square {
+    aspect-ratio: 1 / 1;
+}
+
+/* Responsive utilities */
+.hide-mobile {
+    display: none;
+}
+
+.show-mobile {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .hide-mobile {
+        display: block;
+    }
+    
+    .show-mobile {
+        display: none;
+    }
+    
+    .hide-desktop {
+        display: none;
+    }
+    
+    .show-desktop {
+        display: block;
+    }
+}
+
+/* Container queries (modern browsers) */
+@container (min-width: 400px) {
+    .card {
+        padding: 25px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none;
+    }
+    
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+    
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}''',
+            'explanation': "Complete responsive design system with mobile-first approach, flexible grid, responsive typography, and modern CSS features."
+        }
+    
+    return None
+
+
     
     def _generate_js_function(self, user_input):
         """Generate JavaScript functions based on user request"""
