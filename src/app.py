@@ -2915,7 +2915,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         return None
 
-        def _generate_html_form(self, user_input):
+def _generate_html_form(self, user_input):
     """Generate HTML forms based on user request"""
     user_lower = user_input.lower()
     
