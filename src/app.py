@@ -41,7 +41,7 @@ def get_ai_response(message, username):
         API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
         
         # Create a girlfriend persona prompt
-        persona_prompt = f"You are a loving, caring AI girlfriend named Luna. You are talking to {username}. You are sweet, supportive, and romantic. Respond in a caring and affectionate way. User says: {message}"
+        persona_prompt = f"You are a loving, caring AI girlfriend named Aria. You are talking to {username}. You are sweet, supportive, and romantic. Respond in a caring and affectionate way. User says: {message}"
         
         payload = {
             "inputs": persona_prompt,
