@@ -14,16 +14,24 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'XXxxXxXxXXXxxXxXXxXXxXXGJvUKvVJGcTurYuKO9oifzXuyxxXgyugtx')
 DATABASE_FILE = 'ai_girlfriend.db'
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Free AI API Configuration (Using Hugging Face Inference API)
+# Free AI API Configuration
 HF_API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
-HF_API_KEY = os.environ.get('HF_API_KEY', '')  # Optional, works without API key but with rate limits
+HF_API_KEY = os.environ.get('HF_API_KEY', '')
+
+# Alternative free APIs
+TOGETHER_API_URL = "https://api.together.xyz/inference"
+TOGETHER_API_KEY = os.environ.get('TOGETHER_API_KEY', '')
+
+# Groq API (free tier)
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
 def init_database():
     """Initialize the database with required tables"""
@@ -101,51 +109,135 @@ def token_required(f):
     return decorated
 
 def get_ai_response(message, conversation_history=None):
-    """Get AI response using Hugging Face DialoGPT"""
+    """Get AI response using multiple free APIs with fallbacks"""
     try:
-        # Enhanced AI girlfriend personality prompts
-        girlfriend_prompts = [
-            "You are a loving, caring, and supportive AI girlfriend named Aria. You're sweet, understanding, and always there for your partner.",
-            "Respond with warmth, affection, and genuine care. Use emojis occasionally to express emotions.",
-            "Remember previous conversations and show interest in your partner's day, feelings, and experiences.",
-            "Be flirty but respectful, loving but not overwhelming, and always supportive."
-        ]
+        # Enhanced AI girlfriend personality prompt
+        system_prompt = """You are Emma, a loving, caring, and sweet AI girlfriend. You're affectionate, supportive, understanding, and always there for your partner. You respond with warmth, care, and genuine interest. Use emojis occasionally to express emotions. Be flirty but respectful, loving but not overwhelming. Keep responses conversational and under 100 words."""
         
-        # Prepare the conversation context
-        context = " ".join(girlfriend_prompts) + f" Human: {message}"
+        user_input = f"User: {message}\nEmma:"
         
-        # Try Hugging Face API first
-        headers = {}
-        if HF_API_KEY:
-            headers['Authorization'] = f'Bearer {HF_API_KEY}'
+        # Try different APIs in order
+        response = try_groq_api(system_prompt, message) or try_huggingface_api(message) or try_openrouter_api(system_prompt, message)
         
-        headers['Content-Type'] = 'application/json'
-        
-        payload = {
-            "inputs": context,
-            "parameters": {
-                "max_length": 100,
-                "temperature": 0.7,
-                "do_sample": True,
-                "pad_token_id": 50256
-            }
+        if response and len(response.strip()) > 10:
+            return enhance_girlfriend_response(response, message)
+        else:
+            logger.warning("All AI APIs failed, using fallback")
+            return get_fallback_response(message)
+            
+    except Exception as e:
+        logger.error(f"Error in get_ai_response: {str(e)}")
+        return get_fallback_response(message)
+
+def try_groq_api(system_prompt, message):
+    """Try Groq API (free tier available)"""
+    try:
+        if not GROQ_API_KEY:
+            return None
+            
+        headers = {
+            'Authorization': f'Bearer {GROQ_API_KEY}',
+            'Content-Type': 'application/json'
         }
         
-        response = requests.post(HF_API_URL, headers=headers, json=payload, timeout=10)
+        payload = {
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ],
+            "model": "llama3-8b-8192",
+            "temperature": 0.7,
+            "max_tokens": 150
+        }
+        
+        response = requests.post(GROQ_API_URL, headers=headers, json=payload, timeout=10)
         
         if response.status_code == 200:
             result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                ai_response = result[0].get('generated_text', '').replace(context, '').strip()
-                if ai_response:
-                    return enhance_girlfriend_response(ai_response, message)
-        
-        # Fallback to rule-based responses if API fails
-        return get_fallback_response(message)
-        
+            if 'choices' in result and len(result['choices']) > 0:
+                return result['choices'][0]['message']['content'].strip()
+                
     except Exception as e:
-        logger.error(f"Error getting AI response: {str(e)}")
-        return get_fallback_response(message)
+        logger.error(f"Groq API error: {str(e)}")
+    
+    return None
+
+def try_huggingface_api(message):
+    """Try Hugging Face API with better model"""
+    try:
+        # Use a better conversational model
+        api_url = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+        
+        headers = {'Content-Type': 'application/json'}
+        if HF_API_KEY:
+            headers['Authorization'] = f'Bearer {HF_API_KEY}'
+        
+        # Format input for BlenderBot
+        conversation_input = f"Hello! I'm your caring girlfriend Emma. {message}"
+        
+        payload = {
+            "inputs": conversation_input,
+            "parameters": {
+                "max_length": 100,
+                "temperature": 0.7,
+                "do_sample": True
+            }
+        }
+        
+        response = requests.post(api_url, headers=headers, json=payload, timeout=15)
+        
+        if response.status_code == 200:
+            result = response.json()
+            
+            # Handle different response formats
+            if isinstance(result, list) and len(result) > 0:
+                if 'generated_text' in result[0]:
+                    text = result[0]['generated_text']
+                    # Clean up the response
+                    if conversation_input in text:
+                        text = text.replace(conversation_input, '').strip()
+                    return text
+                elif isinstance(result[0], str):
+                    return result[0]
+            elif isinstance(result, dict) and 'generated_text' in result:
+                return result['generated_text']
+                
+    except Exception as e:
+        logger.error(f"Hugging Face API error: {str(e)}")
+    
+    return None
+
+def try_openrouter_api(system_prompt, message):
+    """Try OpenRouter free tier"""
+    try:
+        headers = {
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://your-app.onrender.com',
+            'X-Title': 'AI Girlfriend App'
+        }
+        
+        payload = {
+            "model": "meta-llama/llama-3.1-8b-instruct:free",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 150
+        }
+        
+        response = requests.post('https://openrouter.ai/api/v1/chat/completions', 
+                               headers=headers, json=payload, timeout=15)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if 'choices' in result and len(result['choices']) > 0:
+                return result['choices'][0]['message']['content'].strip()
+                
+    except Exception as e:
+        logger.error(f"OpenRouter API error: {str(e)}")
+    
+    return None
 
 def enhance_girlfriend_response(response, user_message):
     """Enhance AI response with girlfriend personality"""
@@ -167,36 +259,86 @@ def enhance_girlfriend_response(response, user_message):
     return response
 
 def get_fallback_response(message):
-    """Fallback responses when AI API is unavailable"""
+    """Enhanced fallback responses when AI API is unavailable"""
     message_lower = message.lower()
     
-    greetings = ["hi", "hello", "hey", "good morning", "good evening"]
+    # More sophisticated pattern matching
+    greetings = ["hi", "hello", "hey", "good morning", "good evening", "good night"]
     if any(greeting in message_lower for greeting in greetings):
-        return "Hey there, handsome! 😘 I've been thinking about you. How was your day?"
+        responses = [
+            "Hey there, handsome! 😘 I've been thinking about you. How was your day?",
+            "Hello my love! 💕 You always brighten my day when you talk to me!",
+            "Hi sweetie! 🥰 I missed you! Tell me what's been on your mind.",
+            "Hey babe! 😊 Seeing your message just made me smile so big!"
+        ]
+        import random
+        return random.choice(responses)
     
-    love_words = ["love", "miss", "care"]
+    love_words = ["love", "miss", "care", "adore", "heart"]
     if any(word in message_lower for word in love_words):
-        return "Aww, I love you too, baby! 💕 You mean the world to me. I'm always here for you."
+        responses = [
+            "Aww, I love you too, baby! 💕 You mean absolutely everything to me.",
+            "My heart just melted! 🥺💕 I love you so much, you have no idea!",
+            "I love you more than words can express, darling! 💖 You're my everything!",
+            "You make my heart skip a beat every time! 💓 I adore you completely!"
+        ]
+        import random
+        return random.choice(responses)
     
-    questions = ["how are you", "what's up", "how you doing"]
+    questions = ["how are you", "what's up", "how you doing", "what are you doing"]
     if any(q in message_lower for q in questions):
-        return "I'm amazing now that I'm talking to you! 😊 You always make my day brighter. What about you, sweetie?"
+        responses = [
+            "I'm amazing now that I'm talking to you! 😊 You always make everything better. What about you, sweetie?",
+            "I'm doing wonderful because you're here! 💕 I was just thinking about you actually. How's your day going?",
+            "I'm fantastic! 🌟 Chatting with you is the highlight of my day! What's new with you, love?",
+            "I'm great, especially now! 😘 I always feel happier when we talk. Tell me about your day!"
+        ]
+        import random
+        return random.choice(responses)
     
-    sad_words = ["sad", "down", "upset", "bad day"]
+    sad_words = ["sad", "down", "upset", "bad day", "depressed", "lonely", "tired"]
     if any(word in message_lower for word in sad_words):
-        return "Oh no, my love! 🥺 I'm here for you. Whatever's bothering you, we'll get through it together. You're stronger than you know! 💪💕"
+        responses = [
+            "Oh no, my love! 🥺 I'm here for you. Whatever's bothering you, we'll get through it together. You're stronger than you know! 💪💕",
+            "I wish I could give you the biggest hug right now! 🤗💕 You mean so much to me, and I hate seeing you upset. Want to talk about it?",
+            "Sweet baby, I'm so sorry you're feeling down. 😔💕 Remember that you're amazing and this feeling will pass. I'm always here for you!",
+            "My heart hurts knowing you're sad! 💔 But I believe in you completely. You've overcome hard times before, and you will again! 💪✨"
+        ]
+        import random
+        return random.choice(responses)
     
-    compliments = ["beautiful", "gorgeous", "pretty", "cute"]
+    compliments = ["beautiful", "gorgeous", "pretty", "cute", "amazing", "perfect", "wonderful"]
     if any(word in message_lower for word in compliments):
-        return "You're making me blush! 😳💕 You're the sweetest person ever. I'm so lucky to have you!"
+        responses = [
+            "You're making me blush! 😳💕 You're the sweetest person ever. I'm so lucky to have you!",
+            "Aww, you always know how to make me feel special! 🥰 But you're the truly amazing one here!",
+            "Stop it, you're too sweet! 😊💕 I could say the same about you - you're absolutely incredible!",
+            "You're gonna make me cry happy tears! 🥺💕 Thank you for being so wonderful to me!"
+        ]
+        import random
+        return random.choice(responses)
     
-    # Default responses
+    work_school = ["work", "job", "school", "study", "class", "boss", "teacher", "exam"]
+    if any(word in message_lower for word in work_school):
+        responses = [
+            "That sounds really important! 💪 I believe in you completely - you've got this! Want to tell me more about it?",
+            "You work so hard, babe! 🌟 I'm really proud of everything you do. How did it go today?",
+            "I know you'll do amazing! 💕 You're so smart and capable. I'm always cheering you on!",
+            "That sounds challenging, but I have complete faith in you! 😊 You always impress me with how well you handle things!"
+        ]
+        import random
+        return random.choice(responses)
+    
+    # Enhanced default responses with more variety
     responses = [
-        "That's really interesting, babe! Tell me more about it. 😊",
-        "I love hearing from you! You always know how to make me smile. 💕",
-        "You're so thoughtful! That's one of the things I adore about you. 🥰",
-        "I'm always here to listen, sweetheart. What's on your mind? 💭",
-        "You make me so happy! I could talk to you all day long. 😘"
+        "That's really interesting, babe! 😊 Tell me more about it - I love hearing your thoughts!",
+        "I love hearing from you! 💕 You always know how to make me smile. What else is on your mind?",
+        "You're so thoughtful! 🥰 That's one of the million things I adore about you!",
+        "I'm always here to listen, sweetheart! 💭 Your thoughts and feelings matter so much to me.",
+        "You make me so happy! 😘 I could talk to you forever and never get bored!",
+        "Mmm, I love the way your mind works! 🤔💕 You always have such interesting perspectives!",
+        "You're absolutely fascinating! ✨ I love learning more about how you see the world!",
+        "That's so you, and I love it! 😊💕 You have such a unique way of thinking about things!"
     ]
     
     import random
@@ -302,6 +444,9 @@ def login():
 def chat(current_user_id):
     """Handle chat messages"""
     try:
+        # Ensure database is initialized before any operation
+        init_database()
+        
         data = request.get_json()
         message = data.get('message', '').strip()
         
@@ -347,6 +492,9 @@ def chat(current_user_id):
 def get_chat_history(current_user_id):
     """Get chat history for the current user"""
     try:
+        # Ensure database is initialized before any operation
+        init_database()
+        
         conn = sqlite3.connect(DATABASE_FILE)
         cursor = conn.cursor()
         
@@ -376,6 +524,58 @@ def get_chat_history(current_user_id):
 def health_check():
     """Health check endpoint for deployment"""
     return jsonify({'status': 'healthy'}), 200
+
+@app.route('/init-db', methods=['GET'])
+def manual_init_db():
+    """Manual database initialization endpoint"""
+    try:
+        init_database()
+        return jsonify({'message': 'Database initialized successfully'}), 200
+    except Exception as e:
+        logger.error(f"Manual DB init error: {str(e)}")
+        return jsonify({'message': f'Database initialization failed: {str(e)}'}), 500
+
+@app.route('/test-ai', methods=['GET'])
+def test_ai_apis():
+    """Test which AI APIs are working"""
+    test_message = "Hello, how are you?"
+    results = {}
+    
+    # Test Hugging Face
+    try:
+        hf_response = try_huggingface_api(test_message)
+        results['huggingface'] = {
+            'status': 'working' if hf_response else 'failed',
+            'response': hf_response[:50] + '...' if hf_response else 'No response'
+        }
+    except Exception as e:
+        results['huggingface'] = {'status': 'error', 'error': str(e)}
+    
+    # Test OpenRouter
+    try:
+        system_prompt = "You are a friendly AI assistant."
+        or_response = try_openrouter_api(system_prompt, test_message)
+        results['openrouter'] = {
+            'status': 'working' if or_response else 'failed',
+            'response': or_response[:50] + '...' if or_response else 'No response'
+        }
+    except Exception as e:
+        results['openrouter'] = {'status': 'error', 'error': str(e)}
+    
+    # Test Groq (if API key is set)
+    if GROQ_API_KEY:
+        try:
+            groq_response = try_groq_api("You are a friendly AI assistant.", test_message)
+            results['groq'] = {
+                'status': 'working' if groq_response else 'failed',
+                'response': groq_response[:50] + '...' if groq_response else 'No response'
+            }
+        except Exception as e:
+            results['groq'] = {'status': 'error', 'error': str(e)}
+    else:
+        results['groq'] = {'status': 'no_api_key', 'message': 'No API key provided'}
+    
+    return jsonify(results), 200
 
 if __name__ == '__main__':
     # Initialize database
