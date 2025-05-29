@@ -313,7 +313,9 @@
             showTypingIndicator();
 
             try {
-                const response = await fetch('http://localhost:5000/chat', {
+                // Use relative URL for production, localhost for development
+                const baseUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+                const response = await fetch(`${baseUrl}/chat`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
