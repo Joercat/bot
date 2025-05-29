@@ -791,7 +791,7 @@ function handleClick() {
         
         return None
 
-    def _generate_code_response(self, intent, user_input):
+def _generate_code_response(self, intent, user_input):
     """Generate code-specific responses based on intent"""
     code_generators = {
         'html_element': self._generate_html_element,
