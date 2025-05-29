@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'vYUftucfuFtd466Gyf75r6h79y9t19BV')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 DATABASE_FILE = 'ai_girlfriend.db'
 
 # Setup logging
@@ -27,34 +27,40 @@ HF_API_KEY = os.environ.get('HF_API_KEY', '')  # Optional, works without API key
 
 def init_database():
     """Initialize the database with required tables"""
-    conn = sqlite3.connect(DATABASE_FILE)
-    cursor = conn.cursor()
-    
-    # Users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Chat messages table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS chat_messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            message TEXT NOT NULL,
-            sender TEXT NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DATABASE_FILE)
+        cursor = conn.cursor()
+        
+        # Users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Chat messages table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                message TEXT NOT NULL,
+                sender TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+        logger.info("Database initialized successfully")
+        
+    except Exception as e:
+        logger.error(f"Database initialization error: {str(e)}")
+        raise
 
 def hash_password(password):
     """Hash a password for storing"""
@@ -99,7 +105,7 @@ def get_ai_response(message, conversation_history=None):
     try:
         # Enhanced AI girlfriend personality prompts
         girlfriend_prompts = [
-            "You are a loving, caring, and supportive AI girlfriend. You're sweet, understanding, and always there for your partner.",
+            "You are a loving, caring, and supportive AI girlfriend named Aria. You're sweet, understanding, and always there for your partner.",
             "Respond with warmth, affection, and genuine care. Use emojis occasionally to express emotions.",
             "Remember previous conversations and show interest in your partner's day, feelings, and experiences.",
             "Be flirty but respectful, loving but not overwhelming, and always supportive."
@@ -206,6 +212,9 @@ def serve_frontend():
 def register():
     """Register a new user"""
     try:
+        # Ensure database is initialized before any operation
+        init_database()
+        
         data = request.get_json()
         username = data.get('username', '').strip()
         email = data.get('email', '').strip()
@@ -236,16 +245,20 @@ def register():
         conn.commit()
         conn.close()
         
+        logger.info(f"User {username} registered successfully")
         return jsonify({'message': 'Registration successful'}), 201
         
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
-        return jsonify({'message': 'Registration failed'}), 500
+        return jsonify({'message': f'Registration failed: {str(e)}'}), 500
 
 @app.route('/api/login', methods=['POST'])
 def login():
     """Authenticate user and return JWT token"""
     try:
+        # Ensure database is initialized before any operation
+        init_database()
+        
         data = request.get_json()
         username = data.get('username', '').strip()
         password = data.get('password', '')
@@ -270,6 +283,7 @@ def login():
         # Generate token
         token = generate_token(user[0])
         
+        logger.info(f"User {username} logged in successfully")
         return jsonify({
             'token': token,
             'user': {
